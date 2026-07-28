@@ -38,6 +38,11 @@ class User extends Authenticatable
         return $this->hasMany(ShoppingItem::class);
     }
 
+    public function regularItems()
+    {
+        return $this->hasMany(RegularItem::class);
+    }
+
     public function tags()
     {
         return $this->hasMany(Tag::class);

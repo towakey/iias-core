@@ -3,6 +3,7 @@
 use App\Http\Controllers\ArchiveController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ImageController;
+use App\Http\Controllers\RegularItemController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\ShoppingItemController;
 use Illuminate\Http\Request;
@@ -22,6 +23,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('shopping-items/stats', [ShoppingItemController::class, 'stats']);
     Route::apiResource('shopping-items', ShoppingItemController::class);
     Route::post('shopping-items/{id}/restore', [ShoppingItemController::class, 'restore']);
+
+    Route::apiResource('regular-items', RegularItemController::class);
+    Route::post('regular-items/{regularItem}/add-to-shopping', [RegularItemController::class, 'addToShopping']);
 
     Route::post('images', [ImageController::class, 'store']);
 
