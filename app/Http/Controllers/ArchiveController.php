@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Archive;
 use App\Models\Service;
+use App\Models\Tag;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class ArchiveController extends Controller
 {
@@ -69,7 +71,9 @@ class ArchiveController extends Controller
             'recorded_at' => $recordedAt,
         ]);
 
-        return response()->json($archive, 201);
+        $this->attachTagsFromTitle($request->user(), $archive, $validated['title'] ?? '');
+
+        return response()->json($archive->load('tags'), 201);
     }
 
     public function show(Request $request, Archive $archive)
@@ -110,6 +114,38 @@ class ArchiveController extends Controller
     {
         if ($archive->user_id !== $request->user()->id) {
             abort(403);
+        }
+    }
+
+    private function attachTagsFromTitle($user, Archive $archive, string $title)
+    {
+        if (empty($title)) {
+            return;
+        }
+
+        preg_match_all('/[a-zA-Z0-9]{3,}/', strtolower($title), $matches);
+        $keywords = array_unique($matches[0] ?? []);
+
+        if (empty($keywords)) {
+            return;
+        }
+
+        $tagIds = [];
+        foreach ($keywords as $keyword) {
+            $name = strtolower($keyword);
+            $slug = Str::slug($name);
+            if (empty($slug)) {
+                continue;
+            }
+            $tag = Tag::firstOrCreate(
+                ['user_id' => $user->id, 'slug' => $slug],
+                ['name' => $name, 'color' => null]
+            );
+            $tagIds[] = $tag->id;
+        }
+
+        if (! empty($tagIds)) {
+            $archive->tags()->syncWithoutDetaching($tagIds);
         }
     }
 }
