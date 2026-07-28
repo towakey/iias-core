@@ -43,7 +43,8 @@ class ArchiveController extends Controller
             'visited_at' => 'nullable|date',
         ]);
 
-        $service = Service::where('slug', 'iias-web')->first();
+        $serviceSlug = $request->header('X-Service') ?? $request->input('service_slug', 'iias-web');
+        $service = Service::where('slug', $serviceSlug)->first();
 
         $archive = $request->user()->archives()->create([
             ...$validated,

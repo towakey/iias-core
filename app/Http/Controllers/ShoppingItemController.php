@@ -30,7 +30,8 @@ class ShoppingItemController extends Controller
             'sort_order' => 'nullable|integer',
         ]);
 
-        $service = Service::where('slug', 'iias-web')->first();
+        $serviceSlug = $request->header('X-Service') ?? $request->input('service_slug', 'iias-web');
+        $service = Service::where('slug', $serviceSlug)->first();
 
         $item = $request->user()->shoppingItems()->create([
             ...$validated,
