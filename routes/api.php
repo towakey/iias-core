@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\ArchiveController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ShoppingItemController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -13,4 +15,8 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     Route::post('/logout', [AuthController::class, 'logout']);
+
+    Route::apiResource('archives', ArchiveController::class);
+    Route::apiResource('shopping-items', ShoppingItemController::class);
+    Route::post('shopping-items/{id}/restore', [ShoppingItemController::class, 'restore']);
 });
