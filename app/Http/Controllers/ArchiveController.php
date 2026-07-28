@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Archive;
 use App\Models\Service;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class ArchiveController extends Controller
@@ -43,13 +44,29 @@ class ArchiveController extends Controller
             'visited_at' => 'nullable|date',
         ]);
 
+        $recordedAt = Carbon::parse($validated['recorded_at'] ?? now());
+
+        if (! empty($validated['url'])) {
+            $existing = $request->user()->archives()
+                ->where('url', $validated['url'])
+                ->whereBetween('recorded_at', [
+                    $recordedAt->copy()->subMinutes(5),
+                    $recordedAt->copy()->addMinutes(5),
+                ])
+                ->first();
+
+            if ($existing) {
+                return response()->json($existing, 200);
+            }
+        }
+
         $serviceSlug = $request->header('X-Service') ?? $request->input('service_slug', 'iias-web');
         $service = Service::where('slug', $serviceSlug)->first();
 
         $archive = $request->user()->archives()->create([
             ...$validated,
             'service_id' => $service?->id,
-            'recorded_at' => $validated['recorded_at'] ?? now(),
+            'recorded_at' => $recordedAt,
         ]);
 
         return response()->json($archive, 201);
