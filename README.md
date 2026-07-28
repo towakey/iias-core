@@ -9,8 +9,8 @@ Laravel で構築された REST API。個人用の全自動ロギング・マネ
 ## 技術スタック
 
 - PHP / Laravel
-- MySQL
-- さくらのレンタルサーバー スタンダードプラン
+- MySQL（本番：さくらのレンタルサーバー）
+- SQLite（ローカル開発用）
 
 ## セットアップ
 
@@ -26,18 +26,17 @@ php artisan serve
 
 ```
 app/              # アプリケーションロジック
-  Http/Controllers  # コントローラー
-  Models            # Eloquent モデル
+  Http/           # コントローラー・ミドルウェア
+  Models/         # Eloquent モデル
 bootstrap/        # ブートストラップ
 config/           # 設定ファイル
-database/         # マイグレーション・シーダー
+database/         # マイグレーション・シーダー・ファクトリー
+public/           # 公開ディレクトリ
+resources/        # ビュー・JS・CSS
 routes/           # ルート定義
-resources/        # リソース
 storage/          # ログ・キャッシュ・セッション
-  app/            # アップロードファイル等
-  framework/      # フレームワーク用キャッシュ
-  logs/           # ログ
 tests/            # テスト
+vendor/           # Composer 依存
 ```
 
 ## 主な機能
