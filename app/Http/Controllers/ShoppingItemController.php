@@ -25,6 +25,7 @@ class ShoppingItemController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'image_path' => 'nullable|string|max:2048',
+            'price' => 'nullable|integer|min:0',
             'memo' => 'nullable|string',
             'status' => 'nullable|string|in:active,purchased,archived',
             'sort_order' => 'nullable|integer',
@@ -55,6 +56,7 @@ class ShoppingItemController extends Controller
         $validated = $request->validate([
             'name' => 'sometimes|nullable|string|max:255',
             'image_path' => 'sometimes|nullable|string|max:2048',
+            'price' => 'sometimes|nullable|integer|min:0',
             'memo' => 'sometimes|nullable|string',
             'status' => 'sometimes|nullable|string|in:active,purchased,archived',
             'purchased_at' => 'sometimes|nullable|date',
@@ -84,6 +86,41 @@ class ShoppingItemController extends Controller
         $item->restore();
         $item->update(['status' => 'active', 'purchased_at' => null, 'archived_at' => null]);
         return $item;
+    }
+
+    public function stats(Request $request)
+    {
+        $budgetSetting = $request->user()->settings()->where('setting_key', 'monthly_budget_amount')->value('setting_value') ?? 0;
+        $budget = (int) $budgetSetting;
+        $now = now();
+
+        $totalThisMonth = (int) ($request->user()->shoppingItems()
+            ->where('status', 'purchased')
+            ->whereBetween('purchased_at', [$now->copy()->startOfMonth(), $now->copy()->endOfMonth()])
+            ->sum('price') ?? 0);
+
+        $purchased = $request->user()->shoppingItems()->where('status', 'purchased')->get();
+        $byName = [];
+
+        foreach ($purchased->groupBy('name') as $name => $items) {
+            $dates = $items->sortBy('purchased_at')->pluck('purchased_at')->filter()->values();
+            $intervals = [];
+            for ($i = 1; $i < $dates->count(); $i++) {
+                $intervals[] = $dates[$i]->diffInDays($dates[$i - 1]);
+            }
+            $byName[$name] = [
+                'count' => $items->count(),
+                'last_purchased_at' => $dates->last()?->toDateTimeString(),
+                'avg_interval_days' => empty($intervals) ? null : round(array_sum($intervals) / count($intervals), 1),
+            ];
+        }
+
+        return response()->json([
+            'monthly_budget' => $budget,
+            'total_this_month' => $totalThisMonth,
+            'budget_alert' => $budget > 0 && $totalThisMonth > $budget,
+            'by_name' => $byName,
+        ]);
     }
 
     private function authorizeAccess(Request $request, ShoppingItem $shoppingItem)

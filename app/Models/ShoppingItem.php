@@ -14,6 +14,7 @@ class ShoppingItem extends Model
         'service_id',
         'name',
         'image_path',
+        'price',
         'memo',
         'status',
         'purchased_at',
