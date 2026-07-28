@@ -31,6 +31,13 @@ class ServiceSeeder extends Seeder
                 'description' => 'Tauri デスクトップ クライアント',
                 'is_active' => true,
             ],
+            [
+                'name' => 'IIAS Chrome',
+                'slug' => 'iias-chrome',
+                'type' => 'web',
+                'description' => 'Chrome 拡張機能',
+                'is_active' => true,
+            ],
         ];
 
         foreach ($services as $service) {
