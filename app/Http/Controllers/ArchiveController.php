@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\FetchArchiveBody;
 use App\Models\Archive;
 use App\Models\Service;
 use App\Models\Tag;
@@ -73,6 +74,10 @@ class ArchiveController extends Controller
 
         $this->attachTagsFromTitle($request->user(), $archive, $validated['title'] ?? '');
 
+        if (($validated['archive_type'] ?? null) === 'history' && ! empty($validated['url'])) {
+            FetchArchiveBody::dispatchAfterResponse($archive);
+        }
+
         return response()->json($archive->load('tags'), 201);
     }
 
@@ -108,6 +113,15 @@ class ArchiveController extends Controller
         $this->authorizeAccess($request, $archive);
         $archive->delete();
         return response()->noContent();
+    }
+
+    public function fetchBody(Request $request, Archive $archive)
+    {
+        $this->authorizeAccess($request, $archive);
+        FetchArchiveBody::dispatchSync($archive);
+        $archive->refresh();
+
+        return response()->json($archive->load('tags'));
     }
 
     private function authorizeAccess(Request $request, Archive $archive)

@@ -20,6 +20,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
 
     Route::apiResource('archives', ArchiveController::class);
+    Route::post('archives/{archive}/fetch-body', [ArchiveController::class, 'fetchBody']);
     Route::get('shopping-items/stats', [ShoppingItemController::class, 'stats']);
     Route::apiResource('shopping-items', ShoppingItemController::class);
     Route::post('shopping-items/{id}/restore', [ShoppingItemController::class, 'restore']);
