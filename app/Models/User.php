@@ -53,6 +53,11 @@ class User extends Authenticatable
         return $this->hasMany(TagRule::class);
     }
 
+    public function qrLoginCode()
+    {
+        return $this->hasOne(QrLoginCode::class);
+    }
+
     public function syncLogs()
     {
         return $this->hasMany(SyncLog::class);

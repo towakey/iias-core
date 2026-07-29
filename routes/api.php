@@ -7,6 +7,7 @@ use App\Http\Controllers\ImageController;
 use App\Http\Controllers\RegularItemController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\ShoppingItemController;
+use App\Http\Controllers\QrLoginController;
 use App\Http\Controllers\TagRuleController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -14,6 +15,7 @@ use Illuminate\Support\Facades\Route;
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/refresh', [AuthController::class, 'refresh']);
+Route::post('/qr-login/scan', [QrLoginController::class, 'login']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
@@ -39,4 +41,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::apiResource('api-keys', ApiKeyController::class)->only(['index', 'store', 'destroy']);
     Route::apiResource('tag-rules', TagRuleController::class)->only(['index', 'store', 'destroy']);
+
+    Route::get('qr-login', [QrLoginController::class, 'show']);
+    Route::post('qr-login/generate', [QrLoginController::class, 'generate']);
+    Route::delete('qr-login', [QrLoginController::class, 'destroy']);
 });
