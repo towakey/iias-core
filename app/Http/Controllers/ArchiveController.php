@@ -131,6 +131,20 @@ class ArchiveController extends Controller
         return response()->json($archive->load('tags'));
     }
 
+    public function retag(Request $request)
+    {
+        $count = 0;
+        $request->user()->archives()->with('user')->chunk(100, function ($archives) use (&$count) {
+            foreach ($archives as $archive) {
+                $archive->tags()->detach();
+                TagExtractor::extract($archive);
+                $count++;
+            }
+        });
+
+        return response()->json(['count' => $count]);
+    }
+
     private function authorizeAccess(Request $request, Archive $archive)
     {
         if ($archive->user_id !== $request->user()->id) {

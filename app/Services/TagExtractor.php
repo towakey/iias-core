@@ -9,8 +9,24 @@ use Illuminate\Support\Str;
 class TagExtractor
 {
     private const DEFAULT_STOP_WORDS = [
+        // URL / TLD / file extension noise
         'http', 'https', 'www', 'com', 'net', 'org', 'co', 'jp', 'go', 'ne',
-        'html', 'htm', 'php', 'asp', 'aspx', 'jsp', 'json', 'xml',
+        'html', 'htm', 'php', 'asp', 'aspx', 'jsp', 'json', 'xml', 'png', 'jpg', 'jpeg', 'gif',
+        // common generic English words
+        'the', 'and', 'for', 'are', 'but', 'not', 'you', 'all', 'any', 'can', 'had', 'was', 'one',
+        'our', 'out', 'day', 'get', 'has', 'him', 'his', 'how', 'its', 'may', 'new', 'now', 'old',
+        'see', 'two', 'who', 'did', 'she', 'use', 'her', 'way', 'many', 'some', 'time', 'very',
+        'when', 'come', 'here', 'just', 'like', 'long', 'make', 'over', 'such', 'take', 'than',
+        'them', 'well', 'were', 'what', 'will', 'with', 'have', 'from', 'they', 'know', 'want',
+        'been', 'good', 'much', 'come', 'could', 'would', 'should', 'this', 'that', 'these', 'those',
+        'there', 'their', 'then', 'than', 'only', 'other', 'into', 'about', 'after', 'before',
+        'being', 'each', 'more', 'most', 'also', 'back', 'still', 'being', 'need', 'being',
+        'domain', 'example', 'examples', 'sample', 'test', 'article', 'page', 'home', 'main',
+        'learn', 'read', 'need', 'needing', 'without', 'permission', 'documentation', 'information',
+        'avoid', 'operations', 'used', 'using', 'based', 'made', 'available', 'reserved', 'rights',
+        // common Japanese function words
+        'する', 'ある', 'いる', 'なる', 'れる', 'られる', 'これ', 'それ', 'あれ', 'この', 'その',
+        'あの', 'こと', 'もの', 'よう', 'ため', 'など', 'または', 'および', 'による', 'について',
     ];
 
     public static function extract(Archive $archive): void
