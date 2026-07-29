@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ApiKeyController;
 use App\Http\Controllers\ArchiveController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ImageController;
@@ -11,6 +12,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/refresh', [AuthController::class, 'refresh']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
@@ -32,4 +34,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('settings', [SettingController::class, 'index']);
     Route::post('settings', [SettingController::class, 'store']);
+
+    Route::apiResource('api-keys', ApiKeyController::class)->only(['index', 'store', 'destroy']);
 });
