@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\Archive;
+use App\Services\TagExtractor;
 use fivefilters\Readability\Configuration;
 use fivefilters\Readability\Readability;
 use Illuminate\Bus\Queueable;
@@ -68,6 +69,7 @@ class FetchArchiveBody implements ShouldQueue
 
             $this->archive->body = mb_substr($text, 0, self::MAX_BODY_LENGTH);
             $this->archive->save();
+            TagExtractor::extract($this->archive->fresh());
         } catch (\Throwable $e) {
             Log::warning("FetchArchiveBody failed for {$url}: ".$e->getMessage());
         }

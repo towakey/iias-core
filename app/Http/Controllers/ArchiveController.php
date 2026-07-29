@@ -5,10 +5,10 @@ namespace App\Http\Controllers;
 use App\Jobs\FetchArchiveBody;
 use App\Models\Archive;
 use App\Models\Service;
-use App\Models\Tag;
+use App\Services\TagExtractor;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 
 class ArchiveController extends Controller
 {
@@ -22,12 +22,19 @@ class ArchiveController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->input('search');
-            $query->where(function ($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('url', 'like', "%{$search}%")
-                  ->orWhere('body', 'like', "%{$search}%")
-                  ->orWhere('memo', 'like', "%{$search}%");
-            });
+            if (DB::connection()->getDriverName() === 'mysql') {
+                $query->where(function ($q) use ($search) {
+                    $q->whereRaw('MATCH(title, body, memo) AGAINST (? IN BOOLEAN MODE)', [$search])
+                      ->orWhere('url', 'like', "%{$search}%");
+                });
+            } else {
+                $query->where(function ($q) use ($search) {
+                    $q->where('title', 'like', "%{$search}%")
+                      ->orWhere('url', 'like', "%{$search}%")
+                      ->orWhere('body', 'like', "%{$search}%")
+                      ->orWhere('memo', 'like', "%{$search}%");
+                });
+            }
         }
 
         return $query->paginate($request->input('per_page', 30));
@@ -72,7 +79,7 @@ class ArchiveController extends Controller
             'recorded_at' => $recordedAt,
         ]);
 
-        $this->attachTagsFromTitle($request->user(), $archive, $validated['title'] ?? '');
+        TagExtractor::extract($archive);
 
         if (($validated['archive_type'] ?? null) === 'history' && ! empty($validated['url'])) {
             FetchArchiveBody::dispatchAfterResponse($archive);
@@ -128,38 +135,6 @@ class ArchiveController extends Controller
     {
         if ($archive->user_id !== $request->user()->id) {
             abort(403);
-        }
-    }
-
-    private function attachTagsFromTitle($user, Archive $archive, string $title)
-    {
-        if (empty($title)) {
-            return;
-        }
-
-        preg_match_all('/[a-zA-Z0-9]{3,}/', strtolower($title), $matches);
-        $keywords = array_unique($matches[0] ?? []);
-
-        if (empty($keywords)) {
-            return;
-        }
-
-        $tagIds = [];
-        foreach ($keywords as $keyword) {
-            $name = strtolower($keyword);
-            $slug = Str::slug($name);
-            if (empty($slug)) {
-                continue;
-            }
-            $tag = Tag::firstOrCreate(
-                ['user_id' => $user->id, 'slug' => $slug],
-                ['name' => $name, 'color' => null]
-            );
-            $tagIds[] = $tag->id;
-        }
-
-        if (! empty($tagIds)) {
-            $archive->tags()->syncWithoutDetaching($tagIds);
         }
     }
 }

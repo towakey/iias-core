@@ -7,6 +7,7 @@ use App\Http\Controllers\ImageController;
 use App\Http\Controllers\RegularItemController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\ShoppingItemController;
+use App\Http\Controllers\TagRuleController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -36,4 +37,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('settings', [SettingController::class, 'store']);
 
     Route::apiResource('api-keys', ApiKeyController::class)->only(['index', 'store', 'destroy']);
+    Route::apiResource('tag-rules', TagRuleController::class)->only(['index', 'store', 'destroy']);
 });

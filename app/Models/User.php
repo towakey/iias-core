@@ -48,6 +48,11 @@ class User extends Authenticatable
         return $this->hasMany(Tag::class);
     }
 
+    public function tagRules()
+    {
+        return $this->hasMany(TagRule::class);
+    }
+
     public function syncLogs()
     {
         return $this->hasMany(SyncLog::class);
