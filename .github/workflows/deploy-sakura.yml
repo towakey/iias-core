@@ -1,0 +1,29 @@
+name: Deploy iias-core to Sakura
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy to Sakura server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SAKURA_HOST }}
+          username: ${{ secrets.SAKURA_USER }}
+          key: ${{ secrets.SAKURA_SSH_KEY }}
+          port: ${{ secrets.SAKURA_PORT || 22 }}
+          script: |
+            cd ${{ secrets.SAKURA_APP_DIR || '/home/$USER/iias-core' }}
+            git pull origin main
+            php $(which composer) install --no-dev --optimize-autoloader --no-interaction
+            php artisan migrate --force
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
