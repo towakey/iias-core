@@ -82,6 +82,11 @@ class InstallController extends Controller
             Artisan::call('key:generate', ['--force' => true]);
             Artisan::call('config:clear');
             Artisan::call('migrate', ['--force' => true]);
+            try {
+                Artisan::call('storage:link');
+            } catch (Exception $storageException) {
+                // シンボリックリンク作成に失敗してもセットアップは続行
+            }
         } catch (Exception $e) {
             return back()->withInput()->withErrors(['setup' => 'セットアップコマンドに失敗しました: '.$e->getMessage()]);
         }
