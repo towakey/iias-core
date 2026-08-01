@@ -14,7 +14,7 @@ class InstallController extends Controller
     public function index()
     {
         if ($this->isInstalled()) {
-            return redirect('/');
+            return redirect()->route('home');
         }
 
         $writable = $this->checkWritable();
@@ -95,7 +95,7 @@ class InstallController extends Controller
             'updated_at' => now(),
         ]);
 
-        return redirect('/')->with('success', 'インストールが完了しました。ログイン画面からログインしてください。');
+        return redirect()->route('home')->with('success', 'インストールが完了しました。ログイン画面からログインしてください。');
     }
 
     private function isInstalled(): bool

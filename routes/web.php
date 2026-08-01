@@ -8,8 +8,8 @@ Route::post('/install', [InstallController::class, 'setup']);
 
 Route::get('/', function () {
     if (! file_exists(base_path('.env')) || empty(env('APP_KEY'))) {
-        return redirect('/install');
+        return redirect()->route('install');
     }
 
     return view('welcome');
-});
+})->name('home');
